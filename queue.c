@@ -53,3 +53,11 @@ task_t * poll(taskQueue_t q)
   q->first = q->first->next;
   return ret;
 }
+
+uint8_t isEmpty(taskQueue_t q)
+{
+  if (q->first == NULL)
+    return 1;
+  else
+    return 0;
+}

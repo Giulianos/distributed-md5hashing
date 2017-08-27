@@ -3,17 +3,29 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <sys/types.h>
+#include "slaveProcess.h"
 
-void processTask(task_t * task);
+
 
 int main(int argc, char *argv[])
 {
   taskQueue_t q = newTaskQueue();
-  task_t t;
-  t.filename = "prueba";
-  t.processed = 0;
-  processTask(&t);
-  printf("El hash md5 de %s es %s\n", t.filename, t.hashmd5);
+  taskQueue_t ret = newTaskQueue();
+  task_t t1, t2;
+  t1.filename = "prueba1";
+  t1.processed = 0;
+  t2.filename = "prueba2";
+  t2.processed = 0;
+  offer(q, t1);
+  offer(q, t2);
+  ret = processAllTasks(q);
+  task_t * aux;
+  while(!(isEmpty(ret)))
+  {
+    aux = poll(ret);
+    printf("El hash md5 de %s es %s\n", aux->filename, aux->hashmd5);
+  }
+
   return 0;
 }
 
@@ -52,4 +64,17 @@ void processTask(task_t * task)
     close(pipefd[1]);
     return;
   }
+}
+
+taskQueue_t processAllTasks(taskQueue_t q)
+{
+  taskQueue_t ret = newTaskQueue();
+  task_t * aux;
+  while (!isEmpty(q))
+  {
+    aux = poll(q);
+    processTask(aux);
+    offer(ret, *aux);
+  }
+  return ret;
 }

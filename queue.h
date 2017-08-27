@@ -11,7 +11,7 @@ typedef struct taskQueueCDT *taskQueue_t;
 	extern void offer(taskQueue_t q, task_t task);
 	/* Pop value from the stack, returning success flag. */
 	extern task_t * poll();
-
+	extern uint8_t isEmpty(taskQueue_t q);
 
 
 #endif
