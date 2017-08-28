@@ -1,13 +1,31 @@
 SLAVE=slave
-SOURCES=$(wildcard [^_]*.c)
+SOURCES_SLAVE=slaveProcess.c
+
+APPLICATION=application
+SOURCES_APPLICATION=applicationProcess.c
+
+QUEUE=queue.o
+SOURCES_QUEUE=queue.c
+PAYLOAD=payload.o
+SOURCES_PAYLOAD=payload.c
+
 GCC=gcc
 
-all: $(SLAVE)
+all: $(SLAVE) $(APPLICATION)
 
-$(SLAVE): $(SOURCES)
-	$(GCC) $(SOURCES) -o $(SLAVE)
+$(SLAVE): $(SOURCES_SLAVE) $(QUEUE) $(PAYLOAD)
+	$(GCC) $(SOURCES_SLAVE) $(PAYLOAD) $(QUEUE) -o $(SLAVE)
+
+$(APPLICATION): $(SOURCES_APPLICATION) $(QUEUE) $(PAYLOAD)
+	$(GCC) $(SOURCES_APPLICATION) $(PAYLOAD) $(QUEUE) -o $(APPLICATION)
+
+$(QUEUE): $(SOURCES_QUEUE)
+	$(GCC) -c $(SOURCES_QUEUE)
+
+$(PAYLOAD): $(SOURCES_PAYLOAD)
+	$(GCC) -c $(SOURCES_PAYLOAD)
 
 clean:
-	rm -rf *.o slave
+	rm -rf *.o $(SLAVE) $(APPLICATION)
 
 .PHONY: all clean print

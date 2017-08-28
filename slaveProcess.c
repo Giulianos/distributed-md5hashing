@@ -5,29 +5,27 @@
 #include <sys/types.h>
 #include "slaveProcess.h"
 
+int main(int argc, char *argv[])
+{
+  taskQueue_t q = newTaskQueue();
+  taskQueue_t ret = newTaskQueue();
+  task_t t1, t2;
+  t1.filename = "prueba1";
+  t1.processed = 0;
+  t2.filename = "prueba2";
+  t2.processed = 0;
+  offer(q, t1);
+  offer(q, t2);
+  ret = processAllTasks(q);
+  task_t * aux;
+  while(!(isEmpty(ret)))
+  {
+    aux = poll(ret);
+    printf("El hash md5 de %s es %s\n", aux->filename, aux->hashmd5);
+  }
 
-
-// int main(int argc, char *argv[])
-// {
-//   taskQueue_t q = newTaskQueue();
-//   taskQueue_t ret = newTaskQueue();
-//   task_t t1, t2;
-//   t1.filename = "prueba1";
-//   t1.processed = 0;
-//   t2.filename = "prueba2";
-//   t2.processed = 0;
-//   offer(q, t1);
-//   offer(q, t2);
-//   ret = processAllTasks(q);
-//   task_t * aux;
-//   while(!(isEmpty(ret)))
-//   {
-//     aux = poll(ret);
-//     printf("El hash md5 de %s es %s\n", aux->filename, aux->hashmd5);
-//   }
-//
-//   return 0;
-// }
+  return 0;
+}
 
 void processTask(task_t * task)
 {

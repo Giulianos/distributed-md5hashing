@@ -1,4 +1,4 @@
-#include "aplicationProcess.h"
+#include "applicationProcess.h"
 #include <sys/stat.h>
 
 int main(int argc, char * argv[])
