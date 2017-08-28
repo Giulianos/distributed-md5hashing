@@ -9,5 +9,6 @@
 	extern payload_t newPayload(uint64_t maxBytes);
 	extern uint8_t add(payload_t p, task_t task);
   extern uint64_t freeSpace(payload_t p);
-
+  extern uint8_t isEmptyPL(payload_t pl);
+  extern task_t * get(payload_t pl);
 #endif

@@ -50,6 +50,25 @@ uint8_t add(payload_t p, task_t task)
   return 1;
 }
 
+task_t * get(payload_t pl)
+{
+  if(pl->first == NULL)
+    return NULL;
+  task_t * ret = malloc(sizeof(task_t));
+  *ret = pl->first->task;
+  pl->first = pl->first->next;
+  pl->size -= ret->filesize;
+  return ret;
+}
+
+uint8_t isEmptyPL(payload_t pl)
+{
+  if (pl->first == NULL)
+    return 1;
+  else
+    return 0;
+}
+
 uint64_t freeSpace(payload_t p)
 {
   return p->maxSize - p->size;

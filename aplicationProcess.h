@@ -7,5 +7,8 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include "slaveProcess.h"
+#include "payload.h"
+
+void sendPayloadToSlave (payload_t pl, int slaveNumber);
 
 #endif
