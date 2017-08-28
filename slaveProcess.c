@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include "queue.h"
-#include <unistd.h>
-#include <stdint.h>
-#include <sys/types.h>
 #include "slaveProcess.h"
 
 int main(int argc, char *argv[])
@@ -10,6 +5,14 @@ int main(int argc, char *argv[])
   taskQueue_t q = newTaskQueue();
   taskQueue_t ret = newTaskQueue();
   task_t t1, t2;
+
+  //Acknowledge application
+  FILE * f = fopen(argv[1], "w");
+  fputs("ready", f);
+  fclose(f);
+
+  _exit(0);
+
   t1.filename = "prueba1";
   t1.processed = 0;
   t2.filename = "prueba2";
@@ -21,7 +24,7 @@ int main(int argc, char *argv[])
   while(!(isEmpty(ret)))
   {
     aux = poll(ret);
-    printf("El hash md5 de %s es %s\n", aux->filename, aux->hashmd5);
+    //printf("El hash md5 de %s es %s\n", aux->filename, aux->hashmd5);
   }
 
   return 0;
@@ -35,7 +38,7 @@ void processTask(task_t * task)
 
   if((pid=fork())==-1)
   {
-    printf("Error fork!\n");
+    //printf("Error fork!\n");
   }
   else if(pid==0)
   {
