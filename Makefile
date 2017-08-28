@@ -8,6 +8,6 @@ $(SLAVE): $(SOURCES)
 	$(GCC) $(SOURCES) -o $(SLAVE)
 
 clean:
-	rm -rf *.o
+	rm -rf *.o slave
 
 .PHONY: all clean print
