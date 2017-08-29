@@ -57,6 +57,8 @@ int main(int argc, char * argv[])
 
 void sendPayloadToSlave (payload_t pl, int slaveNumber)
 {
+
+	//Envia al esclavo.
   printf("el esclavo %d proceso los siguientes archivos:\n", slaveNumber);
   while(!isEmptyPL(pl))
   {
