@@ -1,7 +1,7 @@
 #include "applicationProcess.h"
 #include <unistd.h>
 #include <string.h>
-
+#include <sys/shm.h>
 worker_t * createWorkers(int quantity);
 void pollWorkers(worker_t * workers, int quantity);
 int readFromWorker(const worker_t * worker, char * buffer, int len);
@@ -14,9 +14,33 @@ void fetchTasks(taskQueue_t queue, int argc, char * argv[]);
 
 int main(int argc, char * argv[])
 {
+	//create share memory
+	key_t key;
+	int id_mem;
+	int *memory;
+	key = ftok ("/$HOME", 77);
+	if (key == -1){
+		printf("[ERROR 01] Can't generate a share memory space\n");
+		wait(NULL);
+		exit(0);
+	}
+	id_mem = shmget (key, sizeof(int)*1000000, 0777 | IPC_CREAT);
+	if (id_mem == -1){
+		printf("[ERROR 02] Can't generate a share memory space\n");
+		wait(NULL);
+		exit (0);
+	}
+	memory = (int *)shmat (id_mem, (char *)0, 0);
+	if (memory == NULL){
+		printf("[ERROR 03] Can't generate a share memory space\n");
+		wait(NULL);
+		exit (0);
+	}
+
   worker_t * workers;
 	taskQueue_t unassignedTasks;
 	taskQueue_t processedTasks;
+
 
 	//Create workers
   workers = createWorkers(WORKERS_QUANTITY);
@@ -33,7 +57,7 @@ int main(int argc, char * argv[])
 		//Dispatch tasks
 		dispatchTasks(workers, WORKERS_QUANTITY, unassignedTasks);
 		//Retreive processed tasks
-		pollWorkers(workers, WORKERS_QUANTITY, processedTasks);
+		pollWorkers(workers, WORKERS_QUANTITY);
 	}
 
 	stopWorkers(workers, WORKERS_QUANTITY);
@@ -59,7 +83,7 @@ void fetchTasks(taskQueue_t queue, int argc, char * argv[])
 	int i;
 	task_t auxTask;
 
-	for(int i=1; i<argc, i++) {
+	for(int i=1; i<argc; i++) {
 		auxTask.filename = argv[i];
 		auxTask.processed = 0;
 		offer(queue, auxTask);
@@ -79,7 +103,7 @@ void dispatchTasks(const worker_t * workers, int quantity, taskQueue_t * unassig
 	//UNIMPLEMENTED!!
 }
 
-void pollWorkers(worker_t * workers, int quantity)
+void pollWorkers(worker_t * workers, int quantity)//paul walker
 {/* UNIMPLEMENTED!!
   int i;
   char * auxBuffer;
@@ -178,3 +202,28 @@ worker_t * createWorkers(int quantity)
   return workers;
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
