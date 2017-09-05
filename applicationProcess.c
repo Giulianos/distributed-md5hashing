@@ -1,4 +1,4 @@
-
+#include "applicationProcess.h"
 #include <unistd.h>
 #include <string.h>
 
@@ -6,21 +6,81 @@ worker_t * createWorkers(int quantity);
 void pollWorkers(worker_t * workers, int quantity);
 int readFromWorker(const worker_t * worker, char * buffer, int len);
 int writeToWorker(worker_t * worker, const char * msg, int len);
+void assignTaskToWorker(const worker_t * worker, const task_t * task);
+void dispatchTasks(const worker_t * workers, int quantity, taskQueue_t * unassignedTasks);
+void stopWorkers(const worker_t * workers, int quantity);
+void fetchTasks(taskQueue_t queue, int argc, char * argv[]);
+
 
 int main(int argc, char * argv[])
 {
   worker_t * workers;
+	taskQueue_t unassignedTasks;
+	taskQueue_t processedTasks;
 
+	//Create workers
   workers = createWorkers(WORKERS_QUANTITY);
 
-  pollWorkers(workers, WORKERS_QUANTITY);
+	//Create queues
+	unassignedTasks = newTaskQueue();
+	processedTasks = newTaskQueue();
+
+	//Fetch tasks
+	fetchTasks(unassignedTasks, argc, argv);
+
+	//Distribute tasks
+	while(!isEmpty(unassignedTasks)) {
+		//Dispatch tasks
+		dispatchTasks(workers, WORKERS_QUANTITY, unassignedTasks);
+		//Retreive processed tasks
+		pollWorkers(workers, WORKERS_QUANTITY, processedTasks);
+	}
+
+	stopWorkers(workers, WORKERS_QUANTITY);
 
   wait(NULL);
+	_exit(0);
 
 }
 
-void pollWorkers(worker_t * workers, int quantity)
+void stopWorkers(const worker_t * workers, int quantity)
 {
+	int i;
+	char auxCmd = STOP_WORKER_CMD;
+
+	for(i=0; i<quantity; i++) {
+		writeToWorker(workers[i].write_pipe, &auxCmd, 1);
+	}
+
+}
+
+void fetchTasks(taskQueue_t queue, int argc, char * argv[])
+{
+	int i;
+	task_t auxTask;
+
+	for(int i=1; i<argc, i++) {
+		auxTask.filename = argv[i];
+		auxTask.processed = 0;
+		offer(queue, auxTask);
+	}
+
+}
+
+void assignTaskToWorker(const worker_t * worker, const task_t * task)
+{
+	char auxCmd = ASSIGN_TASK_CMD;
+
+	writeToWorker(worker->write_pipe, &auxCmd, 1);
+	writeToWorker(worker->write_pipe, task->filename, strlen(task->filename)+1);
+}
+
+void dispatchTasks(const worker_t * workers, int quantity, taskQueue_t * unassignedTasks) {
+	//UNIMPLEMENTED!!
+}
+
+void pollWorkers(worker_t * workers, int quantity)
+{/* UNIMPLEMENTED!!
   int i;
   char * auxBuffer;
 
@@ -43,110 +103,12 @@ void pollWorkers(worker_t * workers, int quantity)
   for(i=0; i<quantity; i++) {
     readFromWorker(&workers[i], auxBuffer, 50);
     printf("Worker %d said:\n %.50s\n", workers[i].id, auxBuffer);
-  }
+  }*/
+
 }
 
 int readFromWorker(const worker_t * worker, char * buffer, int len)
 {
-  printf("el esclavo %d proceso los siguientes archivos:\n", slaveNumber);
-  while(!isEmptyPL(pl))
-  {
-    printf("%s\n", get(pl)->filename);
-  }
-
-  for(i=0; i < quantity; i++) {
-    pipe(auxpipe_write);
-    pipe(auxpipe_read);
-    workers[i].id = i;
-    workers[i].unprocessed = 0;
-    workers[i].write_pipe = auxpipe_write[1];
-    workers[i].read_pipe = auxpipe_read[0];
-    auxpid = fork();
-    switch(auxpid) {
-      case -1:
-        perror("[ERROR!] Couldn't fork worker!");
-        wait(NULL);
-        _exit(1);
-      case 0: //Child
-        close(STDIN_FILENO);
-        dup(auxpipe_write[0]);
-        close(STDOUT_FILENO);
-        dup(auxpipe_read[1]);
-        close(auxpipe_read[1]);
-        close(auxpipe_read[0]);
-        close(auxpipe_write[1]);
-        close(auxpipe_write[0]);
-        execlp(SLAVE_EXEC_NAME, SLAVE_EXEC_NAME, NULL);
-        perror("[ERROR!] Couldn't execute worker in forked child!");
-        wait(NULL);
-        _exit(1);
-      default:
-        workers[i].pid = auxpid;
-        close(auxpipe_write[0]);
-        close(auxpipe_read[1]);
-    }
-  }
-  #ifdef DEBUG_MSG
-  printf("Workers created!\n");
-  #endif
-
-  return workers;
-
-}
-
-#include <unistd.h>
-#include <string.h>
-
-worker_t * createWorkers(int quantity);
-void pollWorkers(worker_t * workers, int quantity);
-int readFromWorker(const worker_t * worker, char * buffer, int len);
-int writeToWorker(worker_t * worker, const char * msg, int len);
-
-int main(int argc, char * argv[])
-{
-  worker_t * workers;
-
-  workers = createWorkers(WORKERS_QUANTITY);
-
-  pollWorkers(workers, WORKERS_QUANTITY);
-
-  wait(NULL);
-
-}
-
-void pollWorkers(worker_t * workers, int quantity)
-{
-  int i;
-  char * auxBuffer;
-
-  #ifdef DEBUG_MSG
-  printf("Polling workers...\n");
-  #endif
-
-  auxBuffer = (char *)calloc(50, sizeof(char));
-  for(i=0; i<quantity; i++) {
-    #ifdef DEBUG_MSG
-    printf("Writing to worker %d...\n", i);
-    #endif
-    writeToWorker(&(workers[i]), "hola worker", strlen("hola worker")+1);
-  }
-
-  #ifdef DEBUG_MSG
-  printf("Write to all workers done!\n");
-  #endif
-
-  for(i=0; i<quantity; i++) {
-    readFromWorker(&workers[i], auxBuffer, 50);
-    printf("Worker %d said:\n %.50s\n", workers[i].id, auxBuffer);
-  }
-}
-
-int readFromWorker(const worker_t * worker, char * buffer, int len)
-{
-  printf("el esclavo %d proceso los siguientes archivos:\n", slaveNumber);
-  while(!isEmptyPL(pl))
-  {
-    printf("%s\n", get(pl)->filename);
   return read(worker->read_pipe, buffer, len);
 }
 

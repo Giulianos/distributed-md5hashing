@@ -17,6 +17,9 @@
 
 #define DEBUG_MSG 1
 
+#define ASSIGN_TASK_CMD 2
+#define STOP_WORKER_CMD 2
+
 typedef struct
 {
     int id;
