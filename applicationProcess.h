@@ -2,13 +2,28 @@
 #define APLICATIONPROCESS_H
 
 #include <stdio.h>
-#include "queue.h"
-#include <unistd.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include "slaveProcess.h"
 #include "payload.h"
+#include "queue.h"
 
-void sendPayloadToSlave (payload_t pl, int slaveNumber);
+#define JOBSIZE 3
+#define WORKERS_QUANTITY 7
+#define SLAVE_EXEC_NAME "./slaveTest"
+
+#define DEBUG_MSG 1
+
+typedef struct
+{
+    int id;
+    int pid;
+    int unprocessed;
+    int read_pipe;
+    int write_pipe;
+} worker_t;
 
 #endif
