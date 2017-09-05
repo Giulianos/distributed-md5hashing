@@ -11,17 +11,19 @@
 #include "payload.h"
 #include "queue.h"
 
-#define SLAVE_QUANTITY 5
-#define SLAVE_PROCESS_NAME "./slave"
-#define MAX_COMMAND_LENGTH 50
+#define JOBSIZE 3
+#define WORKERS_QUANTITY 7
+#define SLAVE_EXEC_NAME "./slaveTest"
+
+#define DEBUG_MSG 1
 
 typedef struct
 {
     int id;
-    char * mwsr; //Master write - Slave read
-    char * mrsw; //Master read - Slave write
-} slave_t;
-
-void sendPayloadToSlave(payload_t pl, const slave_t * sl);
+    int pid;
+    int unprocessed;
+    int read_pipe;
+    int write_pipe;
+} worker_t;
 
 #endif

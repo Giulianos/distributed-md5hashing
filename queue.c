@@ -20,7 +20,7 @@ typedef struct taskQueueCDT * taskQueue_t;
 
 taskQueue_t newTaskQueue()
 {
-  taskQueue_t ret = malloc(sizeof(struct taskQueueCDT));
+  taskQueue_t ret = (taskQueue_t)malloc(sizeof(struct taskQueueCDT));
   ret->first = NULL;
   ret->last = NULL;
   ret->size = 0;
@@ -29,7 +29,7 @@ taskQueue_t newTaskQueue()
 
 void offer(taskQueue_t q, task_t task)
 {
-  taskQueueNode_t * newNode = malloc(sizeof(taskQueueNode_t));
+  taskQueueNode_t * newNode = (taskQueueNode_t *)malloc(sizeof(taskQueueNode_t));
   newNode->task = task;
   if(q->first == NULL)
   {
@@ -48,7 +48,7 @@ task_t * poll(taskQueue_t q)
 {
   if(q->first == NULL)
     return NULL;
-  task_t * ret = malloc(sizeof(task_t));
+  task_t * ret = (task_t *)malloc(sizeof(task_t));
   *ret = q->first->task;
   q->first = q->first->next;
   return ret;

@@ -1,119 +1,119 @@
 #include "applicationProcess.h"
+#include <unistd.h>
+#include <string.h>
+
+worker_t * createWorkers(int quantity);
+void pollWorkers(worker_t * workers, int quantity);
+int readFromWorker(const worker_t * worker, char * buffer, int len);
+int writeToWorker(worker_t * worker, const char * msg, int len);
 
 int main(int argc, char * argv[])
 {
-  taskQueue_t q = newTaskQueue();
-  uint64_t maxSize = 0;
-  FILE * auxFile;
-  int i;
+  worker_t * workers;
 
-  /* Lets create the slaves */
-  umask(0);
-  slave_t slaves[SLAVE_QUANTITY];
-  printf("Creating slaves...\n");
-  for(i=0; i<SLAVE_QUANTITY; i++)
-  {
-    slaves[i].id = i;
-    slaves[i].mwsr = calloc(14,sizeof(char));
-    sprintf(slaves[i].mwsr, ".fifomwsr%d", i);
-    slaves[i].mrsw = calloc(14,sizeof(char));
-    sprintf(slaves[i].mrsw, ".fifomrsw%d", i);
-    mknod(slaves[i].mwsr, S_IFIFO|0666, 0);
-    mknod(slaves[i].mrsw, S_IFIFO|0666, 0);
-    int fork_result;
-    if((fork_result=fork()) == -1)
-    {
-      perror(" Error creating slaves!\n");
-      wait(NULL);
-      exit(1);
-    } else if(!fork_result) {
-      //Child process (execute slave)
-      printf(" Executing slave %d!\n", i);
-      execlp(SLAVE_PROCESS_NAME, SLAVE_PROCESS_NAME, slaves[i].mrsw, slaves[i].mwsr, NULL);
-      printf(" Error executing slave!\n");
-    } else {
-      printf(" Slave %d created!\n", i);
-    }
-  }
+  workers = createWorkers(WORKERS_QUANTITY);
 
-  /* Lets wait for the slaves to be ready */
-  char * auxbuf = calloc(MAX_COMMAND_LENGTH, sizeof(char));
-  printf("\nWaiting for slaves to be ready...\n");
-  for(i=0; i<SLAVE_QUANTITY; i++)
-  {
-    auxFile = fopen(slaves[i].mrsw, "r");
-    fgets(auxbuf, MAX_COMMAND_LENGTH, auxFile);
-    fclose(auxFile);
-    if(!strncmp(auxbuf, "ready", MAX_COMMAND_LENGTH))
-    {
-      printf(" Slave %d is ready!\n", slaves[i].id);
-    }
-  }
+  pollWorkers(workers, WORKERS_QUANTITY);
 
-  /* Lets create the tasks queue and fetch file sizes */
-  struct stat auxStat;
-  task_t auxTask;
+  wait(NULL);
 
-  for(i=1; i<argc; i++)
-  {
-    auxTask.filename = argv[i];
-    auxTask.processed = 0;
-    auxFile = fopen(argv[i], "r");
-    stat(argv[i], &auxStat);
-    auxTask.filesize = auxStat.st_size;
-    if (auxTask.filesize > maxSize)
-      maxSize = auxTask.filesize;
-    offer(q, auxTask);
-    printf("el tamano de %s es %d\n", auxTask.filename, auxTask.filesize);
-  }
-  payload_t pls[3];
-  maxSize*=10;
-  pls[0] = newPayload(maxSize);
-  pls[1] = newPayload(maxSize);
-  pls[2] = newPayload(maxSize);
-  task_t * aux;
-  int j=0;
-  uint8_t updated = 0;
-  while(!isEmpty(q))
-  {
-    aux = poll(q);
-    updated = 0;
-    while(!updated)
-    {
-      updated = add(pls[j], *aux);
-      if(!updated)
-      {
-        sendPayloadToSlave(pls[j], &slaves[j]);
-        if(j == 2)
-          j = 0;
-        else
-          j++;
-      }
-    }
-  }
-  sendPayloadToSlave(pls[0], &slaves[0]);
-  sendPayloadToSlave(pls[1], &slaves[1]);
-  sendPayloadToSlave(pls[2], &slaves[2]);
-  // while(add(pl, *(aux=poll(q))))
-  // {
-  //   printf("Se pudo agregar el archivo %s al payload!\n", aux->filename);
-  // }
-  // printf("Ya no entran mas archivos, sobraron %lu bytes\n", freeSpace(pl));
 }
 
-void sendPayloadToSlave (payload_t pl, const slave_t * sl)
+void pollWorkers(worker_t * workers, int quantity)
 {
-  FILE * auxFIFO;
-  task_t * auxTask;
-  auxFIFO = fopen(slaves[i].mwsr, "w");
-  fputs("<beginPayload>\n");
-  printf("el esclavo %d esta procesando los siguientes archivos:\n", sl->id);
-  while(!isEmptyPL(pl))
-  {
-    auxTask = get(pl);
-    fputs("%s\n", auxTask->filename);
-    printf("%s\n", auxTask->filename);
+  int i;
+  char * auxBuffer;
+
+  #ifdef DEBUG_MSG
+  printf("Polling workers...\n");
+  #endif
+
+  auxBuffer = (char *)calloc(50, sizeof(char));
+  for(i=0; i<quantity; i++) {
+    #ifdef DEBUG_MSG
+    printf("Writing to worker %d...\n", i);
+    #endif
+    writeToWorker(&(workers[i]), "hola worker", strlen("hola worker")+1);
   }
-  fputs("<endPayload>\n");
-  fclose(auxFIFO);
+
+  #ifdef DEBUG_MSG
+  printf("Write to all workers done!\n");
+  #endif
+
+  for(i=0; i<quantity; i++) {
+    readFromWorker(&workers[i], auxBuffer, 50);
+    printf("Worker %d said:\n %.50s\n", workers[i].id, auxBuffer);
+  }
+}
+
+int readFromWorker(const worker_t * worker, char * buffer, int len)
+{
+  return read(worker->read_pipe, buffer, len);
+}
+
+int writeToWorker(worker_t * worker, const char * msg, int len)
+{
+  #ifdef DEBUG_MSG
+  printf(" worker id: %d\n read_pipe: %d\n write_pipe: %d\n", worker->id, worker->read_pipe, worker->write_pipe);
+  #endif
+  return write(worker->write_pipe, msg, len);
+}
+
+worker_t * createWorkers(int quantity)
+{
+  worker_t * workers;
+  int auxpipe_read[2];
+  int auxpipe_write[2];
+  int i, auxpid;
+
+  #ifdef DEBUG_MSG
+  printf("Creating workers...\n");
+  #endif
+
+  workers = (worker_t *)calloc(quantity, sizeof(worker_t));
+
+  if(workers == NULL) {
+    perror("[ERROR!] Couldn't allocate space for workers!");
+    wait(NULL);
+    _exit(1);
+  }
+
+  for(i=0; i < quantity; i++) {
+    pipe(auxpipe_write);
+    pipe(auxpipe_read);
+    workers[i].id = i;
+    workers[i].unprocessed = 0;
+    workers[i].write_pipe = auxpipe_write[1];
+    workers[i].read_pipe = auxpipe_read[0];
+    auxpid = fork();
+    switch(auxpid) {
+      case -1:
+        perror("[ERROR!] Couldn't fork worker!");
+        wait(NULL);
+        _exit(1);
+      case 0: //Child
+        close(STDIN_FILENO);
+        dup(auxpipe_write[0]);
+        close(STDOUT_FILENO);
+        dup(auxpipe_read[1]);
+        close(auxpipe_read[1]);
+        close(auxpipe_read[0]);
+        close(auxpipe_write[1]);
+        close(auxpipe_write[0]);
+        execlp(SLAVE_EXEC_NAME, SLAVE_EXEC_NAME, NULL);
+        perror("[ERROR!] Couldn't execute worker in forked child!");
+        wait(NULL);
+        _exit(1);
+      default:
+        workers[i].pid = auxpid;
+        close(auxpipe_write[0]);
+        close(auxpipe_read[1]);
+    }
+  }
+  #ifdef DEBUG_MSG
+  printf("Workers created!\n");
+  #endif
+
+  return workers;
+
 }
