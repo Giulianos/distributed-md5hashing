@@ -1,0 +1,9 @@
+### C ###
+
+# Object files
+*.o
+
+# Processes
+slave
+slaveTest
+application
