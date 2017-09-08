@@ -1,6 +1,8 @@
 #include "applicationProcess.h"
 #include <unistd.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 
 worker_t * createWorkers(int quantity);
@@ -34,7 +36,7 @@ int main(int argc, char * argv[])
 	printf("\x1B[32m[DONE!]\x1B[0m\n");
 
 	//Fetch tasks
-	printf("Fetching tasks...");
+	printf("Fetching tasks...\n");
 	finishedTasks = 0;
 	fetchedTasks = fetchTasks(unassignedTasks, argc, argv);
 	printf("\x1B[32m[DONE!]\x1B[0m\n");
@@ -82,14 +84,29 @@ void stopWorkers(const worker_t * workers, int quantity)
 int fetchTasks(taskQueue_t queue, int argc, char * argv[])
 {
 	int i;
+  int fetched = 0;
 	task_t auxTask;
 
 	for(i=1; i<argc; i++) {
-		auxTask.filename = argv[i];
-		auxTask.processed = 0;
-		offer(queue, auxTask);
+    if(regularFileCheck(argv[i])) {
+      auxTask.filename = argv[i];
+  		auxTask.processed = 0;
+  		offer(queue, auxTask);
+      fetched++;
+    } else {
+      printf("\x1B[33mOmitted\x1B[0m %s, not a file!\n", argv[i]);
+    }
 	}
-	return argc-1;
+	return fetched;
+}
+
+int regularFileCheck(const char * filename)
+{
+  struct stat sb;
+
+  /* Code taken from $man 2 stat */
+  stat(filename, &sb);
+  return (sb.st_mode & S_IFMT) == S_IFREG;
 }
 
 void assignTaskToWorker(worker_t * worker, const task_t * task)
