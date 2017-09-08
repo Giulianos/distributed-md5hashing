@@ -1,4 +1,4 @@
 #!/bin/bash
 
-killall slaveTest
+killall slave
 killall application
