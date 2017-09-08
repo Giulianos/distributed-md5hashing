@@ -7,9 +7,9 @@
 #include <sys/types.h>
 #include "queue.h"
 
-#define WAITING_FOR_TASKS 1
-#define RECEVING_TASKS 2
-#define TASKS_READY 3
+#define HASHSIZE 32
+#define MAX_FILENAME_LEN 256
+
 
 void processTask(task_t * task);
 taskQueue_t processAllTasks(taskQueue_t q);

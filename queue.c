@@ -27,6 +27,11 @@ taskQueue_t newTaskQueue()
   return ret;
 }
 
+int size(taskQueue_t q)
+{
+	return q->size;
+}
+
 void offer(taskQueue_t q, task_t task)
 {
   taskQueueNode_t * newNode = (taskQueueNode_t *)malloc(sizeof(taskQueueNode_t));
@@ -51,6 +56,7 @@ task_t * poll(taskQueue_t q)
   task_t * ret = (task_t *)malloc(sizeof(task_t));
   *ret = q->first->task;
   q->first = q->first->next;
+	q->size--;
   return ret;
 }
 
