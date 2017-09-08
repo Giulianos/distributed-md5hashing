@@ -84,7 +84,7 @@ int fetchTasks(taskQueue_t queue, int argc, char * argv[])
 	int i;
 	task_t auxTask;
 
-	for(int i=1; i<argc; i++) {
+	for(i=1; i<argc; i++) {
 		auxTask.filename = argv[i];
 		auxTask.processed = 0;
 		offer(queue, auxTask);

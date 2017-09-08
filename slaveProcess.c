@@ -53,7 +53,7 @@ void processTask(task_t * task)
     close(pipefd[0]);
     close(pipefd[1]);
     /* Ejecuto md5sum */
-		execlp("md5", "md5", "-q",task->filename, NULL);
+		execlp("md5sum", "md5sum" ,task->filename, NULL);
   }
   else
   {
