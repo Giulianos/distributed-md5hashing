@@ -1,6 +1,9 @@
 SLAVE=slave
 SOURCES_SLAVE=slaveProcess.c
 
+VIEW=view
+SOURCES_VIEW=view.c
+
 APPLICATION=application
 SOURCES_APPLICATION=applicationProcess.c
 
@@ -9,7 +12,11 @@ SOURCES_QUEUE=queue.c
 
 GCC=gcc
 
-all: $(SLAVE) $(APPLICATION)
+all: $(VIEW) $(SLAVE) $(APPLICATION) 
+
+
+$(VIEW): $(SOURCES_SLAVE) $(QUEUE)
+	$(GCC) $(SOURCES_VIEW) -o $(VIEW)
 
 $(SLAVE): $(SOURCES_SLAVE) $(QUEUE)
 	$(GCC) $(SOURCES_SLAVE) $(QUEUE) -o $(SLAVE)
@@ -21,6 +28,6 @@ $(QUEUE): $(SOURCES_QUEUE)
 	$(GCC) -c $(SOURCES_QUEUE)
 
 clean:
-	rm -rf *.o $(SLAVE) $(APPLICATION)
+	rm -rf *.o $(SLAVE) $(APPLICATION) $(VIEW)
 
 .PHONY: all clean print debug

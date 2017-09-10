@@ -1,29 +1,4 @@
-#include <sys/shm.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
- #include <sys/wait.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
-void modifysemaphore(int x,key_t id_sem);
-#if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
-// La union ya está definida en sys/sem.h
-#else
-// Tenemos que definir la union
-union semun 
-{ 
-	int val;
-	struct semid_ds *buf;
-	unsigned short int *array;
-	struct seminfo *__buf;
-};
-#endif
-
-
-
-
-
+#include "view.h"
 
 int main(int argc, char* argv[]){
 	//create share memory
@@ -31,19 +6,19 @@ int main(int argc, char* argv[]){
 	int id_mem;
 	int *memory;
 	int id_sem;
-	int current=0;
+	int current=1;
 	union semun arg;
+	int currentmem=1;
+	int state=0;
 
 
-
-
-	key = ftok ("/home", 77);
+	key = ftok ("/home", 7);
 	if (key == -1){
 		printf("[ERROR 01] Can't generate a share memory space\n");
 		wait(NULL);
 		exit(0);
 	}
-	id_mem = shmget (key, sizeof(int)*1000000, 0777 | IPC_CREAT);
+	id_mem = shmget (key,sizeof(int)*10000, 0777 | IPC_CREAT);
 	if (id_mem == -1){
 		printf("[ERROR 02] Can't generate a share memory space\n");
 		wait(NULL);
@@ -64,30 +39,39 @@ int main(int argc, char* argv[]){
 		exit (0);
 	}
 
-	arg.val = 1;
-	semctl (id_sem, 0, SETVAL, &arg);
-	while(memory[current]!=EOF){
+	
+	//printf("llego\n" );
+	int x=2;
+	while(memory[0]!= EOF || memory[0] > x){
+		
 		modifysemaphore(-1,id_sem);
-		while(memory[current]!='\0'){
-			printf("%c",memory[current]);
-			current++;
+		//printf("%d %d\n",memory[0],x);
+		if(memory[0]>x){
+			//printf("entra2\n");
+			while(x<memory[0]){
+				printf("%c",memory[x]);
+				x++;
+			}
 		}
-		current++;
-		if(memory[current]!=EOF){
-			current=0;
-			memory[current]='\0';	
-		}	
+		if(memory[0]>10000-300){	
+			memory[0]=2;
+			x=2;
+		}
 		modifysemaphore(1,id_sem);
-		sleep(1);
+		//printf("sale sem\n");
 	}
-
+	//	printf("\n");
+	  modifysemaphore(-1,id_sem);
+	  memory[1]=-1;
+	  modifysemaphore(1,id_sem);
+	 //printf("sale\n");
 
 
 	return 0;
 
 }
 
-void modifysemaphore(int x,key_t id_sem){
+void modifysemaphore(int x,int id_sem){
 	struct sembuf operation;
 	operation.sem_num = 0;
 	operation.sem_op = x;
