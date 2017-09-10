@@ -17,7 +17,7 @@ int main(int argc, char * argv[])
 
 	auxTask.filename = (char *)calloc(256, sizeof(char));
 
-	auxBuffer = (char *)calloc(MAX_FILENAME_LEN + 1 + HASHSIZE + 2, sizeof(char));
+	auxBuffer = (char *)calloc(15+MAX_FILENAME_LEN + 1 + HASHSIZE + 2, sizeof(char));
 
 	while(running) {
 		while((*curr=getchar()) && *curr!='\0') { curr++; }
@@ -25,7 +25,7 @@ int main(int argc, char * argv[])
 			case 3: running = 0; /*fprintf(stderr, "Exit\n");*/ break;
 			case 2: strncpy(auxTask.filename, msg+1, 256);
 							processTask(&auxTask);
-							sprintf(auxBuffer, "%s:%s\n", auxTask.filename, auxTask.hashmd5);
+							sprintf(auxBuffer, "%s:%s \n", auxTask.filename, auxTask.hashmd5);
 							write(STDOUT_FILENO, auxBuffer, strlen(auxBuffer));
 		}
 		curr = msg;

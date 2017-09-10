@@ -9,8 +9,9 @@ int main(int argc, char* argv[]){
 	int current=1;
 	union semun arg;
 	int currentmem=1;
-	int state=0;
-
+	int state=1;
+	int quantity=1;
+	int x=2;
 
 	key = ftok ("/home", 7);
 	if (key == -1){
@@ -41,19 +42,26 @@ int main(int argc, char* argv[]){
 
 	
 	//printf("llego\n" );
-	int x=2;
+	
 	while(memory[0]!= EOF || memory[0] > x){
 		
 		modifysemaphore(-1,id_sem);
 		//printf("%d %d\n",memory[0],x);
 		if(memory[0]>x){
+
 			//printf("entra2\n");
 			while(x<memory[0]){
+				if(state==1){
+					printf("\x1B[32mFinished[%d]\x1B[0m",quantity++);
+					state=0;
+				}
 				printf("%c",memory[x]);
+				if(memory[x]=='\n')
+					state=1;
 				x++;
 			}
 		}
-		if(memory[0]>10000-300){	
+		if(memory[0]>10000-500){	
 			memory[0]=2;
 			x=2;
 		}

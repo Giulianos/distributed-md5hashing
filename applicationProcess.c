@@ -19,9 +19,11 @@ void stopWorkers(const worker_t * workers, int quantity);
 int readLineFromWorker(const worker_t * worker, char * buffer, int maxlen);
 int fetchTasks(taskQueue_t queue, int argc, char * argv[]);
 int regularFileCheck(const char * filename);
+
+
 int currentmem=2;
 int *memory;
-
+FILE *fp;
 
 int main(int argc, char * argv[])
 {
@@ -33,7 +35,13 @@ int main(int argc, char * argv[])
 	int state=1;
 	int auxpid;
 	union semun arg;
-
+	
+	fp = fopen ( "hash.txt", "w+" );        
+	if (fp==NULL) {
+		fputs ("File error",stderr); 
+		exit (1);
+	}
+	
 
 	key = ftok ("/home", 7);
 	if (key == -1){
@@ -147,8 +155,8 @@ int main(int argc, char * argv[])
 	printf("Exiting...\n");
 	
 
-
-  wait(NULL);
+	fclose ( fp );
+  	wait(NULL);
 	_exit(0);
 
 }
@@ -230,18 +238,20 @@ void pollWorkers(worker_t * workers, int quantity, taskQueue_t queue, int * proc
 	char * auxBuffer;
 	int currentBuffer=0;
 	int carrie=1;
-	auxBuffer = calloc(300, sizeof(char));
+	auxBuffer = calloc(500, sizeof(char));
 	for(i=0; i<quantity; i++) {
-		while(readLineFromWorker(&workers[i], auxBuffer, 300)) {
+		while(readLineFromWorker(&workers[i], auxBuffer, 500)) {
+			fputs(auxBuffer,fp);
+			//fputs("\r\n",fp);
 			//printf("\x1B[32mFinished\x1B[0m %s\n", auxBuffer);
 			currentBuffer=0;
 			modifysemaphore(-1,id_sem);
-			if(currentmem>10000-300){
+			if(currentmem>10000-500){
 				while(memory[0]!=2){
 					sleep(0.5);
 				}
 			}
-			//strcpy(memory[currentmem],"\x1B[32mFinished\x1B[0m ");
+
 			while(auxBuffer[currentBuffer]!='\0'){
 				memory[currentmem]=auxBuffer[currentBuffer];
 				currentBuffer++;currentmem++;

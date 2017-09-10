@@ -15,3 +15,5 @@ view
 app
 
 *.out
+
+*.txt
