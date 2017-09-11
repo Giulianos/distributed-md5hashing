@@ -12,6 +12,8 @@ int main(int argc, char* argv[]){
 	int state=1;
 	int quantity=1;
 	int x=2;
+	int end=1;
+
 
 	key = ftok ("/home", 7);
 	if (key == -1){
@@ -41,32 +43,36 @@ int main(int argc, char* argv[]){
 	}
 
 	
-	//printf("llego\n" );
 	
-	while(memory[0]!= EOF || memory[0] > x){
-		
+	//printf("llego\n" );
+	while(end) {
 		modifysemaphore(-1,id_sem);
-		//printf("%d %d\n",memory[0],x);
-		if(memory[0]>x){
+		if(memory[0]!= EOF || memory[0] > x){
+			
+			
+			//printf("%d %d\n",memory[0],x);
+			if(memory[0]>x){
 
-			//printf("entra2\n");
-			while(x<memory[0]){
-				if(state==1){
-					printf("\x1B[32mFinished[%d]\x1B[0m",quantity++);
-					state=0;
+				//printf("entra2\n");
+				while(x<memory[0]){
+					if(state==1){
+						printf("\x1B[32mFinished[%d]\x1B[0m",quantity++);
+						state=0;
+					}
+					printf("%c",memory[x]);
+					if(memory[x]=='\n')
+						state=1;
+					x++;
 				}
-				printf("%c",memory[x]);
-				if(memory[x]=='\n')
-					state=1;
-				x++;
 			}
-		}
-		if(memory[0]>10000-500){	
-			memory[0]=2;
-			x=2;
+			if(memory[0]>2000){
+				memory[0]=2;
+				x=2;
+			}
+		}else{
+			end=0;
 		}
 		modifysemaphore(1,id_sem);
-		//printf("sale sem\n");
 	}
 	//	printf("\n");
 	  modifysemaphore(-1,id_sem);

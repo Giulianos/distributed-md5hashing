@@ -238,20 +238,28 @@ void pollWorkers(worker_t * workers, int quantity, taskQueue_t queue, int * proc
 	char * auxBuffer;
 	int currentBuffer=0;
 	int carrie=1;
+	int state=1;
 	auxBuffer = calloc(500, sizeof(char));
 	for(i=0; i<quantity; i++) {
 		while(readLineFromWorker(&workers[i], auxBuffer, 500)) {
 			fputs(auxBuffer,fp);
 			//fputs("\r\n",fp);
 			//printf("\x1B[32mFinished\x1B[0m %s\n", auxBuffer);
+			state=1;
 			currentBuffer=0;
-			modifysemaphore(-1,id_sem);
-			if(currentmem>10000-500){
-				while(memory[0]!=2){
-					sleep(0.5);
+			if(currentmem>2000){
+				while(state){
+					modifysemaphore(-1,id_sem);
+					if(memory[0]!=2){
+						sleep(0.5);
+					}else{
+						state=0;
+						currentmem=2;
+					}
+					modifysemaphore(1,id_sem);
 				}
 			}
-
+			modifysemaphore(-1,id_sem);
 			while(auxBuffer[currentBuffer]!='\0'){
 				memory[currentmem]=auxBuffer[currentBuffer];
 				currentBuffer++;currentmem++;
