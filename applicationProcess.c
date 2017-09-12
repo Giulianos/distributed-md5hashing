@@ -52,8 +52,9 @@ int main(int argc, char * argv[])
 		wait(NULL);
 		exit(1);
 	}
-	arg.val = 1;
+	arg.val = 0;
 	semctl(id_sem, 0, SETVAL, &arg);
+	modifySemaphore(1,id_sem);
 	memory[0]=0;
 	memory[1]=0;
 
@@ -196,6 +197,8 @@ void pollWorkers(worker_t * workers, int quantity, taskQueue_t queue, int * proc
 	int currentBuffer=0;
 	int carrie=1;
 	int state=1;
+	modifySemaphore(-1,id_sem);
+	modifySemaphore(1,id_sem);
 	auxBuffer = calloc(500, sizeof(char));
 	for(i=0; i<quantity; i++) {
 		while(readLineFromWorker(&workers[i], auxBuffer, 500)) {
