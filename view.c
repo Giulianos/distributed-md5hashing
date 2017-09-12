@@ -15,19 +15,19 @@ int main(int argc, char* argv[]){
 	int end=1;
 
 
-	key = ftok ("/home", 7);
+	key = ftok("/home", 7);
 	if (key == -1){
 		printf("[ERROR 01] Can't generate a share memory space\n");
 		wait(NULL);
 		exit(0);
 	}
-	id_mem = shmget (key,sizeof(int)*10000, 0777 | IPC_CREAT);
+	id_mem = shmget(key,sizeof(int)*10000, 0777 | IPC_CREAT);
 	if (id_mem == -1){
 		printf("[ERROR 02] Can't generate a share memory space\n");
 		wait(NULL);
 		exit (0);
 	}
-	memory = (int *)shmat (id_mem, (char *)0, 0);
+	memory = (int *)shmat(id_mem, (char *)0, 0);
 	if (memory == NULL){
 		printf("[ERROR 03] Can't generate a share memory space\n");
 		wait(NULL);

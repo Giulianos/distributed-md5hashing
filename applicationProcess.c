@@ -22,40 +22,38 @@ int main(int argc, char * argv[])
 	int finishedTasks;
 
 
-	fp = fopen ( "hash.txt", "w+" );
+	fp = fopen("hash.txt", "w+");
 	if (fp==NULL) {
-		fputs ("File error",stderr);
-		exit (1);
+		perror("File error");
+		exit(1);
 	}
 
-
-	key = ftok ("/home", 7);
-	if (key == -1){
-		printf("[ERROR 01] Can't generate a share memory space\n");
+	key = ftok("/home", 7);
+	if (key == -1) {
+		perror("Can't generate a share memory space");
 		wait(NULL);
-		exit(0);
+		exit(1);
 	}
-	id_mem = shmget (key, sizeof(int)*10000, 0777 | IPC_CREAT);
-	if (id_mem == -1){
-		printf("[ERROR 02] Can't generate aaa share memory space\n");
+	id_mem = shmget(key, sizeof(int)*10000, 0777 | IPC_CREAT);
+	if (id_mem == -1) {
+		perror("Can't generate a share memory space");
 		wait(NULL);
-		exit (0);
+		exit(1);
 	}
-	memory = (int *)shmat (id_mem, (char *)0, 0);
-	if (memory == NULL){
-		printf("[ERROR 03] Can't generate a share memory space\n");
+	memory = (int *)shmat(id_mem, NULL, 0);
+	if (memory == NULL) {
+		perror("Can't generate a share memory space");
 		wait(NULL);
-		exit (0);
+		exit(1);
 	}
 	id_sem = semget (key, 1, 0600 | IPC_CREAT);
-	if (id_sem == -1)
-	{
-		printf("[ERROR 04] Can't generate a semaphore\n");
+	if (id_sem == -1) {
+		perror("Can't generate a semaphore set");
 		wait(NULL);
-		exit (0);
+		exit(1);
 	}
 	arg.val = 1;
-	semctl (id_sem, 0, SETVAL, &arg);
+	semctl(id_sem, 0, SETVAL, &arg);
 	memory[0]=0;
 	memory[1]=0;
 
@@ -95,7 +93,7 @@ int main(int argc, char * argv[])
 		pollWorkers(workers, WORKERS_QUANTITY, processedTasks, &finishedTasks,id_sem);
 	}
 
-	/*sleep(0.5);
+	sleep(0.5);
 	modifySemaphore(-1,id_sem);
 	memory[0]=EOF;
 	modifySemaphore(1,id_sem);
@@ -105,7 +103,7 @@ int main(int argc, char * argv[])
 		 		state=0;
 	 	}
 		modifySemaphore(1,id_sem);
-	}*/
+	}
 
 	printf("Stopping workers...\n");
 	stopWorkers(workers, WORKERS_QUANTITY);
@@ -201,10 +199,12 @@ void pollWorkers(worker_t * workers, int quantity, taskQueue_t queue, int * proc
 	auxBuffer = calloc(500, sizeof(char));
 	for(i=0; i<quantity; i++) {
 		while(readLineFromWorker(&workers[i], auxBuffer, 500)) {
+			printf("Started polling worker!\n");
 			fputs(auxBuffer,fp);
 			state=1;
 			currentBuffer=0;
 			if(currentmem>2000){
+				printf("(currentmem>2)=true\n");
 				while(state){
 					modifySemaphore(-1,id_sem);
 					if(memory[0]!=2){
@@ -216,7 +216,9 @@ void pollWorkers(worker_t * workers, int quantity, taskQueue_t queue, int * proc
 					modifySemaphore(1,id_sem);
 				}
 			}
+			printf("modifySemaphore...\n");
 			modifySemaphore(-1,id_sem);
+			printf("done!\n");
 			while(auxBuffer[currentBuffer]!='\0'){
 				memory[currentmem]=auxBuffer[currentBuffer];
 				currentBuffer++;
@@ -226,6 +228,7 @@ void pollWorkers(worker_t * workers, int quantity, taskQueue_t queue, int * proc
 			currentmem++;
 			memory[0]=currentmem;
 			modifySemaphore(1,id_sem);
+			printf("Finished polling worker!\n");
 			workers[i].unprocessed--;
 			(*processedTasks)++;
 		}
