@@ -1,4 +1,4 @@
-#include "view.h"
+#include "sharedMemory.h"
 
 int main(int argc, char* argv[]){
 	//create share memory
@@ -42,18 +42,10 @@ int main(int argc, char* argv[]){
 		exit (0);
 	}
 
-	
-	
-	//printf("llego\n" );
 	while(end) {
-		modifysemaphore(-1,id_sem);
+		modifySemaphore(-1,id_sem);
 		if(memory[0]!= EOF || memory[0] > x){
-			
-			
-			//printf("%d %d\n",memory[0],x);
 			if(memory[0]>x){
-
-				//printf("entra2\n");
 				while(x<memory[0]){
 					if(state==1){
 						printf("\x1B[32mFinished[%d]\x1B[0m",quantity++);
@@ -72,23 +64,13 @@ int main(int argc, char* argv[]){
 		}else{
 			end=0;
 		}
-		modifysemaphore(1,id_sem);
+		modifySemaphore(1,id_sem);
 	}
-	//	printf("\n");
-	  modifysemaphore(-1,id_sem);
+	  modifySemaphore(-1,id_sem);
 	  memory[1]=-1;
-	  modifysemaphore(1,id_sem);
-	 //printf("sale\n");
+	  modifySemaphore(1,id_sem);
 
 
 	return 0;
 
-}
-
-void modifysemaphore(int x,int id_sem){
-	struct sembuf operation;
-	operation.sem_num = 0;
-	operation.sem_op = x;
-	operation.sem_flg = 0;
-	semop (id_sem, &operation, 1);
 }
