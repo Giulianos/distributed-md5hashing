@@ -28,7 +28,7 @@ int main(int argc, char * argv[])
 		exit(1);
 	}
 
-	key = ftok("/home", 7);
+	key = ftok("/home", getpid());
 	if (key == -1) {
 		perror("Can't generate a share memory space");
 		wait(NULL);
@@ -52,8 +52,9 @@ int main(int argc, char * argv[])
 		wait(NULL);
 		exit(1);
 	}
-	arg.val = 1;
+	arg.val = 0;
 	semctl(id_sem, 0, SETVAL, &arg);
+	modifySemaphore(1, id_sem);
 	memory[0]=0;
 	memory[1]=0;
 
