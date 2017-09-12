@@ -204,6 +204,7 @@ void pollWorkers(worker_t * workers, int quantity, taskQueue_t queue, int * proc
 		while(readLineFromWorker(&workers[i], auxBuffer, 500)) {
 			//printf("Started polling worker!\n");
 			fputs(auxBuffer,fp);
+			fputs("\n", fp);
 			state=1;
 			currentBuffer=0;
 			if(currentmem>2000){
@@ -233,15 +234,12 @@ void pollWorkers(worker_t * workers, int quantity, taskQueue_t queue, int * proc
 			currentmem++;
 			memory[0]=currentmem;
 			modifySemaphore(1,id_sem);
-			printf("Finished polling worker!\n");
 			workers[i].unprocessed--;
 			(*processedTasks)++;
 		}
 
 	}
-
-
-
+	free(auxBuffer);
 }
 
 int readFromWorker(const worker_t * worker, char * buffer, int len)
