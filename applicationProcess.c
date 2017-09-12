@@ -52,8 +52,9 @@ int main(int argc, char * argv[])
 		wait(NULL);
 		exit(1);
 	}
-	arg.val = 1;
+	arg.val = 0;
 	semctl(id_sem, 0, SETVAL, &arg);
+	modifySemaphore(1, id_sem);
 	memory[0]=0;
 	memory[1]=0;
 
