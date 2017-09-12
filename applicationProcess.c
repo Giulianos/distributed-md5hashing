@@ -93,19 +93,19 @@ int main(int argc, char * argv[])
 	while(finishedTasks!=fetchedTasks) {
 		pollWorkers(workers, WORKERS_QUANTITY, processedTasks, &finishedTasks,id_sem);
 	}
-/*
+
 	sleep(0.5);
 	modifySemaphore(-1,id_sem);
 	memory[0]=EOF;
 	modifySemaphore(1,id_sem);
-	while(state){
-		modifySemaphore(-1,id_sem);
-		if(memory[1]==-1){
-		 		state=0;
-	 	}
-		modifySemaphore(1,id_sem);
-	}
-*/
+	// while(state){
+	// 	modifySemaphore(-1,id_sem);
+	// 	if(memory[1]==-1){
+	// 	 		state=0;
+	//  	}
+	// 	modifySemaphore(1,id_sem);
+	// }
+
 	printf("Stopping workers...\n");
 	stopWorkers(workers, WORKERS_QUANTITY);
 	printf("\x1B[32m[DONE!]\x1B[0m\n");
@@ -197,21 +197,23 @@ void pollWorkers(worker_t * workers, int quantity, taskQueue_t queue, int * proc
 	int currentBuffer=0;
 	int carrie=1;
 	int state=1;
-	modifySemaphore(-1,id_sem);
-	modifySemaphore(1,id_sem);
+	//modifySemaphore(-1,id_sem);
+	//modifySemaphore(1,id_sem);
 	auxBuffer = calloc(500, sizeof(char));
 	for(i=0; i<quantity; i++) {
 		while(readLineFromWorker(&workers[i], auxBuffer, 500)) {
-			printf("Started polling worker!\n");
+			//printf("Started polling worker!\n");
 			fputs(auxBuffer,fp);
 			state=1;
 			currentBuffer=0;
 			if(currentmem>2000){
-				printf("(currentmem>2)=true\n");
+				//printf("(currentmem>2)=true\n");
 				while(state){
 					modifySemaphore(-1,id_sem);
 					if(memory[0]!=2){
 						sleep(0.5);
+						state=0;
+						currentmem=2;
 					}else{
 						state=0;
 						currentmem=2;
@@ -219,9 +221,9 @@ void pollWorkers(worker_t * workers, int quantity, taskQueue_t queue, int * proc
 					modifySemaphore(1,id_sem);
 				}
 			}
-			printf("modifySemaphore...\n");
+			//printf("modifySemaphore...\n");
 			modifySemaphore(-1,id_sem);
-			printf("done!\n");
+			//printf("done!\n");
 			while(auxBuffer[currentBuffer]!='\0'){
 				memory[currentmem]=auxBuffer[currentBuffer];
 				currentBuffer++;
