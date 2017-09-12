@@ -92,7 +92,7 @@ int main(int argc, char * argv[])
 	while(finishedTasks!=fetchedTasks) {
 		pollWorkers(workers, WORKERS_QUANTITY, processedTasks, &finishedTasks,id_sem);
 	}
-
+/*
 	sleep(0.5);
 	modifySemaphore(-1,id_sem);
 	memory[0]=EOF;
@@ -104,7 +104,7 @@ int main(int argc, char * argv[])
 	 	}
 		modifySemaphore(1,id_sem);
 	}
-
+*/
 	printf("Stopping workers...\n");
 	stopWorkers(workers, WORKERS_QUANTITY);
 	printf("\x1B[32m[DONE!]\x1B[0m\n");
