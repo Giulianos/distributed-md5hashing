@@ -15,7 +15,7 @@ int main(int argc, char* argv[]){
 	int end=1;
 
 
-	key = ftok("/home", 7);
+	key = ftok("/home", atoi(argv[1]));
 	if (key == -1){
 		printf("[ERROR 01] Can't generate a share memory space\n");
 		wait(NULL);

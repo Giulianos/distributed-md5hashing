@@ -28,7 +28,7 @@ int main(int argc, char * argv[])
 		exit(1);
 	}
 
-	key = ftok("/home", 7);
+	key = ftok("/home", getpid());
 	if (key == -1) {
 		perror("Can't generate a share memory space");
 		wait(NULL);
