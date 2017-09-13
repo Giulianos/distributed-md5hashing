@@ -1,7 +1,7 @@
 # Introduccion
 El objetivo del sistema es calcular de forma distribuida los hashes md5 de un grupo de archivos, recibidos por parámetro. Para esto se utilizaron diferentes procesos y mecanismos de comunicación: IPC’s (pipes, shared memory y semáforos). Por otra parte, los hashes md5 de los archivos procesados son almacenados en un .txt .
 La estructura de los archivos que componen el sistema se divide en:
-- #Application#
+- **Application**
 Este proceso es el encargado de comunicarse tanto con los esclavos como con la view. En cuanto a los esclavos, lo que hace es: crearlos, establecer los pipes de comunicación con cada uno de ellos y distribuir las tareas a realizar mandando de a JOBSIZE cantidades a cada esclavo que se encuentre libre. Por otra parte, cuando comienza la ejecución de este proceso, se muestra el PID para que mediante el comando ./view PID se pueda ver la salida de los archivos procesados en la pantalla. Creímos que era necesario parar el programa y permitirle al usuario optar por abrir la view o no, ya que el enunciado establece que la view podría aparecer o no.
 - **View**
 Es la parte visual del sistema. En este proceso se obtienen los datos guardados en la Shared Memory por el proceso aplicación y se imprimen de manera secuencial. Para esto, se recibe como parámetro del programa el PID del proceso aplicación del cual se quiere obtener su salida.
